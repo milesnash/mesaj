@@ -1,4 +1,6 @@
+import { API } from "aws-amplify";
 import React, { Component } from "react";
+import * as moment from "moment";
 import logo from './logo.svg';
 import './App.css';
 
@@ -7,33 +9,10 @@ class App extends Component {
     super(props);
 
     this.state = {
-      isLoading: false,
-      messages: [
-        {
-          id: 1,
-          sentAt: "Seconds ago",
-          status: "Sent",
-          to: "07700900002",
-          content: "The rain in Spain falls mainly on the plain.",
-        },
-        {
-          id: 2,
-          sentAt: "10 minutes ago",
-          status: "Sent",
-          to: "07700900001",
-          content:
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. " +
-            "Cras eu tempus nisi, sed maximus arcu.",
-        },
-        {
-          id: 3,
-          sentAt: "Ages ago",
-          status: "Sent",
-          to: "07700900000",
-          content: "Texty McTextface.",
-        },
-      ],
+      isLoading: true,
+      messages: [],
       sendingMessage: false,
+      serverError: false,
       to: "",
       content: "",
     };
@@ -42,6 +21,26 @@ class App extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleMessageFormSubmit = this.handleMessageFormSubmit.bind(this);
+  }
+
+  componentDidMount() {
+    API.get('messagesapi', '/messages')
+      .then((messages) => {
+        this.setState({
+          isLoading: false,
+          messages
+        });
+      })
+      .catch((error) => {
+        console.error(error.message || error);
+        this.setState({
+          serverError: true,
+        })
+      });
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.sendMessageTimeoutHandle);
   }
 
   handleChange(e) {
@@ -67,7 +66,7 @@ class App extends Component {
             ...prevState.messages,
             {
               id: Math.round(Math.random() * 1000),
-              sentAt: "Just now-ish",
+              sentAt: moment().unix(),
               status: "Sent",
               to,
               content
@@ -80,7 +79,14 @@ class App extends Component {
   }
 
   render() {
-    const { content, isLoading, messages, to, sendingMessage } = this.state;
+    const {
+      content,
+      isLoading,
+      messages,
+      to,
+      sendingMessage,
+      serverError,
+    } = this.state;
 
     return (
       <div className="container-fluid App">
@@ -116,7 +122,10 @@ class App extends Component {
                 ></textarea>
               </div>
               <div className="form-group">
-                <button className="btn btn-primary" disabled={sendingMessage}>
+                <button
+                  className="btn btn-primary"
+                  disabled={sendingMessage || serverError}
+                >
                   {sendingMessage && (
                     <span
                       className="spinner-border spinner-border-sm"
@@ -154,7 +163,9 @@ class App extends Component {
                 {!!messages.length &&
                   messages.map((message) => (
                     <tr key={message.id}>
-                      <th scope="row">{message.sentAt}</th>
+                      <th scope="row">
+                        {moment.unix(message.sentAt).fromNow()}
+                      </th>
                       <td>{message.status}</td>
                       <td>{message.to}</td>
                       <td>{message.content}</td>
@@ -164,7 +175,9 @@ class App extends Component {
                   <tr>
                     <th colSpan="4" scope="row">
                       <div className="d-flex justify-content-center">
-                        {isLoading ? (
+                        {serverError ? (
+                          "Failed to retrieve messages from the server 😭"
+                        ) : isLoading ? (
                           <LoadingSpinner />
                         ) : (
                           "You haven't send a message yet!"
