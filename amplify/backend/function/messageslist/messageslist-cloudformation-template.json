@@ -83,7 +83,7 @@
         "Timeout": "25",
         "Code": {
           "S3Bucket": "amplify-mesaj-dev-234404-deployment",
-          "S3Key": "amplify-builds/messageslist-416243594359496f3253-build.zip"
+          "S3Key": "amplify-builds/messageslist-6171457657705352615a-build.zip"
         }
       }
     },

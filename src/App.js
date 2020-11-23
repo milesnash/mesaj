@@ -21,22 +21,12 @@ class App extends Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleMessageFormSubmit = this.handleMessageFormSubmit.bind(this);
+    this.getMessages = this.getMessages.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
   }
 
   componentDidMount() {
-    API.get('messagesapi', '/messages')
-      .then((messages) => {
-        this.setState({
-          isLoading: false,
-          messages
-        });
-      })
-      .catch((error) => {
-        console.error(error.message || error);
-        this.setState({
-          serverError: true,
-        })
-      });
+    this.getMessages();
   }
 
   componentWillUnmount() {
@@ -54,28 +44,45 @@ class App extends Component {
       sendingMessage: true,
     });
 
-    const { content, to } = this.state;
-    // Validation
-    // POST to API
-    console.log(content, to);
+    const { content, to } = this.state; // TODO: Validation
 
-    this.sendMessageTimeoutHandle = setTimeout(() => {
-      this.setState((prevState) => {
-        return {
-          messages: [
-            ...prevState.messages,
-            {
-              id: Math.round(Math.random() * 1000),
-              sentAt: moment().unix(),
-              status: "Sent",
-              to,
-              content
-            }
-          ],
-          sendingMessage: false,
-        };
+    this.sendMessage({ content, to });
+  }
+
+  getMessages() {
+    API.get("messagesapi", "/messages")
+      .then((messages) => {
+        messages.sort((a, b) => a.sentAt < b.sentAt ? -1 : 1)
+        this.setState({
+          isLoading: false,
+          messages,
+        });
+      })
+      .catch((error) => {
+        console.error(error.message || error);
+        this.setState({
+          serverError: true,
+        });
       });
-    }, 3000);
+  }
+
+  sendMessage(message) {
+    API.post("messagesapi", "/messages", {
+      body: message,
+    })
+      .then((message) => {
+        this.setState({
+          sendingMessage: false,
+        });
+
+        this.getMessages();
+      })
+      .catch((error) => {
+        console.error(error.message || error);
+        this.setState({
+          serverError: true,
+        });
+      });
   }
 
   render() {
