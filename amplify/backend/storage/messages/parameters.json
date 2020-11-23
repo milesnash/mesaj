@@ -1,0 +1,7 @@
+{
+    "tableName": "messages",
+    "partitionKeyName": "userId",
+    "partitionKeyType": "S",
+    "sortKeyName": "sentAt",
+    "sortKeyType": "N"
+}
