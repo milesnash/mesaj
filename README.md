@@ -36,6 +36,12 @@
     amplify init
     ```
 
+    Your answers to the init questions might look like these:
+
+    ![amplify-init](doc/images/amplify-init.png)
+
+    Note that if you choose `prod` as your environment, the next step will create an optimised production build for the frontend.
+
 3. Publish the front and backend
 
    **WARNING** This will provision resources in AWS for which you may be charged.
