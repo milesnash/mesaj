@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
 type Request events.APIGatewayProxyRequest
@@ -30,33 +31,53 @@ type Message struct {
 	Content string `json:"content"`
 }
 
-func HandleGet() (messages []Message) {
-	return []Message{
-		Message{
-			"5fbae8c1",
-			"1",
-			time.Now().Unix(),
-			"Sent",
-			"07700900002",
-			"The rain in Spain falls mainly on the plain.",
-		},
-		Message{
-			"5fbae8c2",
-			"1",
-			time.Now().Unix(),
-			"Sent",
-			"07700900001",
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras eu tempus nisi, sed maximus arcu.",
-		},
-		Message{
-			"5fbae8c3",
-			"1",
-			time.Now().Unix(),
-			"Sent",
-			"07700900000",
-			"This came from the server!",
-		},
+func HandleGet() (messages []Message, err error) {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := dynamodb.New(sess)
+
+	keyCond := expression.Key("userId").Equal(expression.Value("1")) // TODO: Implement users
+
+	expr, err := expression.NewBuilder().
+		WithKeyCondition(keyCond).
+		Build()
+
+	if err != nil {
+		return messages, err
 	}
+
+	input := &dynamodb.QueryInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		KeyConditionExpression:    expr.KeyCondition(),
+		ProjectionExpression:      expr.Projection(),
+		TableName:                 aws.String(os.Getenv("STORAGE_MESSAGES_NAME")),
+	}
+
+	input.SetScanIndexForward(false) // TODO: Ordering
+	input.SetLimit(5)                // TODO: Pagination
+
+	result, err := svc.Query(input)
+
+	if err != nil {
+		return messages, err
+	}
+
+	for _, i := range result.Items {
+		message := Message{}
+
+		err = dynamodbattribute.UnmarshalMap(i, &message)
+
+		if err != nil {
+			return messages, err
+		}
+
+		messages = append(messages, message)
+	}
+
+	return messages, err
 }
 
 func HandlePost(message Message) (Message, error) {
@@ -68,7 +89,7 @@ func HandlePost(message Message) (Message, error) {
 
 	message.SentAt = time.Now().Unix()
 	message.ID = base32.StdEncoding.EncodeToString([]byte(fmt.Sprint(message.SentAt)))
-	message.UserID = "1"    // TODO: Implement user
+	message.UserID = "1"    // TODO: Implement users
 	message.Status = "Sent" // TODO: Implement third-party messaging integration
 
 	item, err := dynamodbattribute.MarshalMap(message)
@@ -99,7 +120,14 @@ func Handler(ctx context.Context, request Request) (Response, error) {
 
 	switch method := request.HTTPMethod; method {
 	case "GET":
-		body, err = json.Marshal(HandleGet())
+		var messages []Message
+		messages, err = HandleGet()
+
+		if err != nil {
+			return Response{StatusCode: 500}, err
+		}
+
+		body, err = json.Marshal(messages)
 		json.HTMLEscape(&buf, body)
 
 	case "POST":
