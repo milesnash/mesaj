@@ -15,22 +15,27 @@ class App extends Component {
       serverError: false,
       to: "",
       content: "",
+      updateSentText: true,
     };
 
-    this.sendMessageTimeoutHandle = 0;
+    this.updateSentTextHandle = 0;
 
     this.handleChange = this.handleChange.bind(this);
     this.handleMessageFormSubmit = this.handleMessageFormSubmit.bind(this);
     this.getMessages = this.getMessages.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
+    this.updateSentText = this.updateSentText.bind(this);
   }
 
   componentDidMount() {
     this.getMessages();
+    this.updateSentTextHandle = setInterval(() => {
+      this.updateSentText();
+    }, 60000);
   }
 
   componentWillUnmount() {
-    clearTimeout(this.sendMessageTimeoutHandle);
+    clearInterval(this.updateSentTextHandle);
   }
 
   handleChange(e) {
@@ -86,6 +91,14 @@ class App extends Component {
       });
   }
 
+  updateSentText() {
+    const { updateSentText } = this.state;
+
+    this.setState({
+      updateSentText: !!updateSentText
+    })
+  }
+
   render() {
     const {
       content,
@@ -94,6 +107,7 @@ class App extends Component {
       to,
       sendingMessage,
       serverError,
+      updateSentText,
     } = this.state;
 
     return (
@@ -168,7 +182,7 @@ class App extends Component {
                 </tr>
               </thead>
               <tbody>
-                {!!messages.length &&
+                {updateSentText && !!messages.length &&
                   messages.map((message) => (
                     <tr key={message.id}>
                       <th scope="row">
