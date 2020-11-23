@@ -32,6 +32,7 @@ type Message struct {
 }
 
 func HandleGet() (messages []Message, err error) {
+	messages = []Message{}
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))

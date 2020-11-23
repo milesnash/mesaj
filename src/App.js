@@ -52,6 +52,7 @@ class App extends Component {
   getMessages() {
     API.get("messagesapi", "/messages")
       .then((messages) => {
+        messages = messages || [];
         messages.sort((a, b) => a.sentAt < b.sentAt ? -1 : 1)
         this.setState({
           isLoading: false,
