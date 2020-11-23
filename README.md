@@ -51,3 +51,7 @@
     ```
     
 4. Browse to the frontend URL that amplify outputs and you're done!
+
+## Clean up
+
+1. Run `amplify delete` to remove everything amplify published above from AWS. Note that this will delete a number of project files locally as well. Run `git checkout .` to return to a clean state.
