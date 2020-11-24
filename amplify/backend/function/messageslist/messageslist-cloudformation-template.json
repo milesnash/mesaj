@@ -82,8 +82,8 @@
         "Layers": [],
         "Timeout": "25",
         "Code": {
-          "S3Bucket": "amplify-mesaj-dev-234404-deployment",
-          "S3Key": "amplify-builds/messageslist-6171457657705352615a-build.zip"
+          "S3Bucket": "amplify-mesaj-prod-221323-deployment",
+          "S3Key": "amplify-builds/messageslist-3063455a51375454334f-build.zip"
         }
       }
     },

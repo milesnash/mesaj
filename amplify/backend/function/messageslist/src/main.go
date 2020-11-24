@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -19,9 +20,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
+// Request contains data coming from the API Gateway proxy
 type Request events.APIGatewayProxyRequest
+
+// Response configures the response to be returned by API Gateway for the request
 type Response events.APIGatewayProxyResponse
 
+// Message represents a message record
 type Message struct {
 	ID      string `json:"id"`
 	UserID  string `json:"userId"`
@@ -31,6 +36,7 @@ type Message struct {
 	Content string `json:"content"`
 }
 
+// HandleGet handles received Requests whose HTTPMethod is GET
 func HandleGet() (messages []Message, err error) {
 	messages = []Message{}
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
@@ -81,6 +87,7 @@ func HandleGet() (messages []Message, err error) {
 	return messages, err
 }
 
+// HandlePost handles received Requests whose HTTPMethod is POST
 func HandlePost(message Message) (Message, error) {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -89,7 +96,7 @@ func HandlePost(message Message) (Message, error) {
 	svc := dynamodb.New(sess)
 
 	message.SentAt = time.Now().Unix()
-	message.ID = base32.StdEncoding.EncodeToString([]byte(fmt.Sprint(message.SentAt)))
+	message.ID = strings.ToLower(base32.StdEncoding.EncodeToString([]byte(fmt.Sprint(message.SentAt))))
 	message.UserID = "1"    // TODO: Implement users
 	message.Status = "Sent" // TODO: Implement third-party messaging integration
 
@@ -113,6 +120,7 @@ func HandlePost(message Message) (Message, error) {
 	return message, nil
 }
 
+// Handler handles the request/response process
 func Handler(ctx context.Context, request Request) (Response, error) {
 	var buf bytes.Buffer
 	var body []byte

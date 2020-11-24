@@ -1,0 +1,39 @@
+{
+    "paths": [
+        {
+            "name": "/messages",
+            "lambdaFunction": "messageslist",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST",
+                    "/GET"
+                ]
+            }
+        }
+    ],
+    "resourceName": "messagesapi",
+    "apiName": "messagesapi",
+    "functionArns": [
+        {
+            "lambdaFunction": "messageslist"
+        }
+    ],
+    "privacy": {
+        "auth": 1,
+        "unauth": 0,
+        "authRoleName": "amplify-mesaj-prod-221323-authRole",
+        "unAuthRoleName": "amplify-mesaj-prod-221323-unauthRole"
+    },
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "messageslist",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ],
+    "uuid": "e1907ad7"
+}
