@@ -30,7 +30,13 @@
     cd mesaj
     ```
 
-2. Initialise amplify
+2.  Install npm dependencies
+
+    ```bash
+    npm i
+    ```
+
+3.  Initialise amplify
 
     ```bash
     amplify init
@@ -42,7 +48,7 @@
 
     Note that if you choose `prod` as your environment, the next step will create an optimised production build for the frontend.
 
-3. Publish the front and backend
+4. Publish the front and backend
 
    **WARNING** This will provision resources in AWS for which you may be charged.
 
@@ -50,7 +56,7 @@
     amplify publish
     ```
     
-4. Browse to the frontend URL that amplify outputs and you're done!
+5. Browse to the frontend URL that amplify outputs and you're done!
 
 ## Clean up
 
