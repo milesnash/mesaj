@@ -58,6 +58,10 @@
     
 5. Browse to the frontend URL that amplify outputs and you're done!
 
+    Note that the backend sometimes takes a little more time to fully deploy than it takes for amplify to publish the frontend app to S3, so you may initially see the error "Failed to retrieve messages from the server 😭".  Fear not, try refreshing and after some time it will change to "You haven't send a message yet!".  At this point, you'll be good to post a message.  I have seen this take 10 minutes.
+
+
+
 ## Clean up
 
 1. Run `amplify delete` to remove everything amplify published above from AWS. Note that this will delete a number of project files locally as well. Run `git checkout .` to return to a clean state.
